@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	//	"fmt"
+	"fmt"
 	"io/ioutil"
-	//"net/http"
+	"net/http"
 )
 
 type Cafeteria struct {
@@ -54,10 +54,40 @@ func loadMenuJson() (cafeteriaMap map[string]Cafeteria) {
 	return
 }
 
+type MenuHeaders struct {
+	CafeteriaName string `json:"cafeteria_name"`
+}
+
+func serveCafeteriaJson(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	if r.Method == "POST" {
+		// check if name was in the body and respond with 402 if not
+		if r.Body == nil {
+			http.Error(w, "Empty request body.", 402)
+			return
+		}
+
+		// extract the cafeteria name from the request
+		var requestHeaders MenuHeaders
+		if err := json.NewDecoder(r.Body).Decode(&requestHeaders); err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		// TODO: Handle invalid cafeteria name
+		cafeteria := currentCafeMap[requestHeaders.CafeteriaName]
+		json.NewEncoder(w).Encode(cafeteria)
+	}
+
+}
+
+var currentCafeMap map[string]Cafeteria
+
 func main() {
 	// this will be used to serve up the data
-	currentCafeMap := loadMenuJson()
+	currentCafeMap = loadMenuJson()
 
 	// setup http server and serve the cafes
-
+	http.HandleFunc("/menu", serveCafeteriaJson)
+	http.ListenAndServe(":8000", nil)
 }
