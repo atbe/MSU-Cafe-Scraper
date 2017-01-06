@@ -37,11 +37,16 @@ class Scraper(object):
             caf_name = caf_anchor.text
             caf_endpoint = caf_anchor.get('href')
 
+            cafe_dict_key = ""
+            try:
+                cafe_dict_key = caf_endpoint.split('/')[2].strip().lower()
+            except IndexError:
+                #print("Not a desired cafeteria menu.")
+                continue
             # skipping non-cafeteria menus. Cafe menus have 'menus' in their endpoint
-            if 'menus' not in caf_endpoint:
+            if 'menus' not in caf_endpoint or cafe_dict_key not in self.cafes_dict:
                 continue
 
             # index two is the name of the cafe
-            cafe_dict_key = caf_endpoint.split('/')[2].strip().lower()
             self.cafes_dict[cafe_dict_key] = Cafe(caf_name, caf_endpoint)
 
