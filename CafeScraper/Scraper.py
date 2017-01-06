@@ -33,20 +33,20 @@ class Scraper(object):
 
         # all the cafeterias are in a list in this div
         for li in cafe_list_div.find_all('li'):
-            caf_anchor = li.find('a')
-            caf_name = caf_anchor.text
-            caf_endpoint = caf_anchor.get('href')
+            cafe_anchor = li.find('a')
+            cafe_name = cafe_anchor.text
+            cafe_endpoint = cafe_anchor.get('href')
 
             cafe_dict_key = ""
             try:
-                cafe_dict_key = caf_endpoint.split('/')[2].strip().lower()
+                cafe_dict_key = cafe_endpoint.split('/')[2].strip().lower()
             except IndexError:
                 #print("Not a desired cafeteria menu.")
                 continue
             # skipping non-cafeteria menus. Cafe menus have 'menus' in their endpoint
-            if 'menus' not in caf_endpoint or cafe_dict_key not in self.cafes_dict:
+            if 'menus' not in cafe_endpoint or cafe_dict_key not in self.cafes_dict:
                 continue
 
             # index two is the name of the cafe
-            self.cafes_dict[cafe_dict_key] = Cafe(caf_name, caf_endpoint)
+            self.cafes_dict[cafe_dict_key] = Cafe(cafe_dict_key, cafe_name, cafe_endpoint)
 
