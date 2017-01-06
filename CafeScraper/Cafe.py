@@ -12,6 +12,15 @@ class Cafe(object):
         self.restaurants = []
         self._go_download_restaurants()
 
+        # assume cafe is closed and check if it indeed is by checking the restaurants
+        # TODO: Scrape site for hours instead
+        self.is_closed = True
+        for r in self.restaurants:
+            # if there is at least 1 restaurant that is not closed,
+            # the caf is not closed
+            if not r.is_closed():
+                self.is_closed = False
+
     def _go_download_restaurants(self):
         page_bytes = request.urlopen(self.CAFE_BASE_URL + self.endpoint)
         soup = BeautifulSoup(page_bytes, 'html.parser')
@@ -32,22 +41,19 @@ class Cafe(object):
             rest = Restaurant(rest_name, caf_rest_endpoint, self)
             self.restaurants.append(rest)
 
-    def is_closed(self):
-        for r in self.restaurants:
-            # if there is at least 1 restaurant that is not closed,
-            # the caf is not closed
-            if not r.is_closed():
-                return False
-        return True
-
     def __str__(self):
         output = ""
         output += 'Cafe: ' + self.name
+
+        if self.is_closed:
+            output += ' CLOSED\n'
+            return output
 
         # each restaurant
         for r in self.restaurants:
             if not r.is_closed():
                 output += '\n' + str(r)
+
         return output
 
     def __repr__(self):
@@ -82,7 +88,7 @@ class Restaurant(object):
 
             # not being served
             if menu == None:
-                print('Could not find ', menu_tag)
+                #print('Could not find ', menu_tag)
                 continue
 
             # loop over all the menu options and add them to their respective list
@@ -90,7 +96,8 @@ class Restaurant(object):
                 name = div.text.strip()
 
                 # skip these garbage entries
-                if name.lower() == 'closed' or '\n' in name:
+                # hours is mixed in the same section of the list of their websites
+                if name.lower() == 'closed' or '\n' in name or 'hours' in name.lower():
                     continue
 
                 #print(self.cafe.name, self.name, '----->', "'{}'".format(name))
@@ -105,6 +112,7 @@ class Restaurant(object):
         output = ""
         output += "{:^180}\n".format(self.name)
 
+        # check if is closed first
         if self.is_closed():
             output += ' CLOSED'
             return output
