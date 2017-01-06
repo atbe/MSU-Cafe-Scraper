@@ -25,7 +25,7 @@ type Cafeteria struct {
 func loadMenuJson() (cafeteriaMap map[string]Cafeteria) {
 	b, err := ioutil.ReadFile("menus.json")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 
 	var data []Cafeteria
