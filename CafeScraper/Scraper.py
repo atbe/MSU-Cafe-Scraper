@@ -13,7 +13,9 @@ class Scraper(object):
     CAFE_BASE_URL = 'https://eatatstate.com'
 
     def __init__(self):
-        self.cafes = []
+        self.cafes_dict = { 'shaw': None, 'gallery': None, 'landon': None, 'case': None,
+            'brody': None, 'akers': None, 'holmes': None, 'holden': None, 'wilson': None }
+
         self._go_download_cafes()
 
     def _go_download_cafes(self):
@@ -35,6 +37,11 @@ class Scraper(object):
             caf_name = caf_anchor.text
             caf_endpoint = caf_anchor.get('href')
 
-            #print(caf_name, caf_endpoint)
+            # skipping non-cafeteria menus. Cafe menus have 'menus' in their endpoint
+            if 'menus' not in caf_endpoint:
+                continue
 
-            self.cafes.append(Cafe(caf_name, caf_endpoint))
+            # index two is the name of the cafe
+            cafe_dict_key = caf_endpoint.split('/')[2].strip().lower()
+            self.cafes_dict[cafe_dict_key] = Cafe(caf_name, caf_endpoint)
+
