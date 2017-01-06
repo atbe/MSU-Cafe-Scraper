@@ -13,10 +13,10 @@ class Scraper(object):
     CAFE_BASE_URL = 'https://eatatstate.com'
 
     def __init__(self):
-        self.cafes = self._go_download_cafes()
+        self.cafes = []
+        self._go_download_cafes()
 
     def _go_download_cafes(self):
-        cafes = []
         page_bytes = request.urlopen(self.CAFE_BASE_URL + '/menus')
         soup = BeautifulSoup(page_bytes, 'html.parser')
 
@@ -37,6 +37,4 @@ class Scraper(object):
 
             #print(caf_name, caf_endpoint)
 
-            cafes.append(Cafe(caf_name, caf_endpoint))
-
-        return cafes
+            self.cafes.append(Cafe(caf_name, caf_endpoint))

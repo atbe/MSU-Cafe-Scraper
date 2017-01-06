@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from urllib import request
+from itertools import zip_longest
 
 class Cafe(object):
 
@@ -32,21 +33,21 @@ class Cafe(object):
             self.restaurants.append(rest)
 
     def is_closed(self):
-        closed = True
         for r in self.restaurants:
+            # if there is at least 1 restaurant that is not closed,
+            # the caf is not closed
             if not r.is_closed():
-                closed = False
-        return closed
+                return False
+        return True
 
     def __str__(self):
         output = ""
         output += 'Cafe: ' + self.name
 
         # each restaurant
-        output += str(self.restaurants)
         for r in self.restaurants:
             if not r.is_closed():
-                output += str(r)
+                output += '\n' + str(r)
         return output
 
     def __repr__(self):
@@ -87,7 +88,12 @@ class Restaurant(object):
             # loop over all the menu options and add them to their respective list
             for div in menu.find_all('div', attrs={'class': 'field-item'}):
                 name = div.text.strip()
-                print(self.cafe.name, self.name, '----->', "'{}'".format(name))
+
+                # skip these garbage entries
+                if name.lower() == 'closed' or '\n' in name:
+                    continue
+
+                #print(self.cafe.name, self.name, '----->', "'{}'".format(name))
 
                 menu_list_tags[menu_tag].append(name)
 
@@ -97,17 +103,17 @@ class Restaurant(object):
 
     def __str__(self):
         output = ""
-        output += self.name + '\n'
+        output += "{:^180}\n".format(self.name)
 
         if self.is_closed():
             output += ' CLOSED'
             return output
 
-        # lunch only for now
-        if self.lunch != None:
-            output += 'Lunch:\n'
-            for item in self.lunch:
-                output += item + '\n'
+        # print the menus
+        output += "{:^50}{:^50}{:^50}{:^50}\n".format('Breakfast', 'Lunch', 'Dinner', 'Late-Night')
+        output += "{:^50}{:^50}{:^50}{:^50}\n".format('-'*10, '-'*10, '-'*10, '-'*10)
+        for breakfast,lunch,dinner,late_night in zip_longest(self.breakfast, self.lunch, self.dinner, self.late_night):
+            output += "{:^50}{:^50}{:^50}{:^50}\n".format(str(breakfast), str(lunch), str(dinner), str(late_night))
 
         return output
 
