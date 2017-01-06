@@ -2,7 +2,7 @@ from CafeScraper.Scraper import Scraper
 import json
 
 scraper = Scraper()
-json_dump = json.dumps(scraper.cafes_dict, default=lambda c: c.__dict__, sort_keys=True)
+json_dump = json.dumps(list(scraper.cafes_dict.values()), default=lambda c: c.__dict__, sort_keys=True)
 print(json_dump)
 
 # save to file
