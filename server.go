@@ -22,7 +22,7 @@ type Cafeteria struct {
 	UniqueName string `json:"unique_name"`
 }
 
-func loadMenuJson() (cafeteriaMap map[string]Cafeteria) {
+func loadMenuJson() (map[string]Cafeteria, []Cafeteria) {
 	b, err := ioutil.ReadFile("menus.json")
 	if err != nil {
 		panic(err)
@@ -34,7 +34,7 @@ func loadMenuJson() (cafeteriaMap map[string]Cafeteria) {
 	}
 
 	// Build the map of caf name to caf object
-	cafeteriaMap = make(map[string]Cafeteria)
+	cafeteriaMap := make(map[string]Cafeteria)
 	for i := range data {
 		rest := data[i]
 		//fmt.Println(rest.CoverName)
@@ -51,7 +51,7 @@ func loadMenuJson() (cafeteriaMap map[string]Cafeteria) {
 			}
 	*/
 
-	return
+	return cafeteriaMap, data
 }
 
 type MenuHeaders struct {
@@ -63,7 +63,7 @@ func serveCafeteriaJson(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		// check if name was in the body and respond with 402 if not
 		if r.Body == nil {
-			http.Error(w, "Empty request body.", 402)
+			//http.error(w, "empty request body.", 402)
 			return
 		}
 
@@ -78,16 +78,24 @@ func serveCafeteriaJson(w http.ResponseWriter, r *http.Request) {
 		cafeteria := currentCafeMap[requestHeaders.CafeteriaName]
 		json.NewEncoder(w).Encode(cafeteria)
 	}
+}
 
+func serveAllCafeteriaJson(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	if r.Method == "GET" {
+		json.NewEncoder(w).Encode(currentCafeArray)
+	}
 }
 
 var currentCafeMap map[string]Cafeteria
+var currentCafeArray []Cafeteria
 
 func main() {
 	// this will be used to serve up the data
-	currentCafeMap = loadMenuJson()
+	currentCafeMap, currentCafeArray = loadMenuJson()
 
 	// setup http server and serve the cafes
-	http.HandleFunc("/menu", serveCafeteriaJson)
+	http.HandleFunc("/menu/cafeteria", serveCafeteriaJson)
+	http.HandleFunc("/menu/all_cafeterias", serveAllCafeteriaJson)
 	http.ListenAndServe(":8000", nil)
 }
