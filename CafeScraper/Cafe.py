@@ -16,7 +16,7 @@ class Cafe(object):
 
         # assume cafe is closed and check if it indeed is by checking the restaurants
         # TODO: Scrape site for hours instead
-        self.is_closed = self.is_closed()
+        self.is_closed = self.check_if_closed()
 
 
     def _go_download_restaurants(self):
@@ -39,11 +39,11 @@ class Cafe(object):
             rest = Restaurant(rest_name, caf_rest_endpoint)
             self.restaurants.append(rest)
 
-    def is_closed(self):
+    def check_if_closed(self):
         for r in self.restaurants:
             # if there is at least 1 restaurant that is not closed,
             # the caf is not closed
-            if not r.is_closed():
+            if not r.check_if_closed():
                 return False
         return True
 
@@ -57,7 +57,7 @@ class Cafe(object):
 
         # each restaurant
         for r in self.restaurants:
-            if not r.is_closed():
+            if not r.check_if_closed():
                 output += '\n' + str(r)
 
         return output

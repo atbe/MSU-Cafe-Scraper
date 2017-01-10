@@ -15,7 +15,7 @@ class Restaurant(object):
 
         self._go_download_options()
 
-        self.is_closed = self.is_closed()
+        self.is_closed = self.check_if_closed()
 
     def _go_download_options(self):
         # lets do lunch only for now
@@ -52,7 +52,7 @@ class Restaurant(object):
                 # append this food name to the list
                 time_segment_to_collection_dict[time_segment_name_str].append(single_food_name_str)
 
-    def is_closed(self):
+    def check_if_closed(self):
         return len(self.lunch) == 0 and len(self.dinner) == 0 and len(self.late_night) == 0 \
                and len(self.breakfast) == 0
 
@@ -61,7 +61,7 @@ class Restaurant(object):
         output += "{:^180}\n".format(self.name)
 
         # check if is closed first
-        if self.is_closed():
+        if self.check_if_closed():
             output += ' CLOSED'
             return output
 
