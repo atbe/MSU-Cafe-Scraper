@@ -18,6 +18,7 @@ type Cafeteria struct {
 		LateNight []string `json:"late_night"`
 		Lunch     []string `json:"lunch"`
 		Name      string   `json:"name"`
+        IsClosed    bool   `json:"is_closed"`
 	} `json:"restaurants"`
 	UniqueName string `json:"unique_name"`
 }
