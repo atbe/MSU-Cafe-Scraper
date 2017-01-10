@@ -15,6 +15,8 @@ class Restaurant(object):
 
         self._go_download_options()
 
+        self.is_closed = self.is_closed()
+
     def _go_download_options(self):
         # lets do lunch only for now
         page_bytes = request.urlopen(self.CAFE_BASE_URL + self.endpoint)

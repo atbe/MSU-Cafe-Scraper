@@ -7,6 +7,7 @@ class Cafe(object):
     CAFE_BASE_URL = 'https://eatatstate.com'
 
     def __init__(self, unique_name, cover_name, endpoint):
+
         self.unique_name = unique_name
         self.cover_name = cover_name
         self.endpoint = endpoint
@@ -15,12 +16,8 @@ class Cafe(object):
 
         # assume cafe is closed and check if it indeed is by checking the restaurants
         # TODO: Scrape site for hours instead
-        self.is_closed = True
-        for r in self.restaurants:
-            # if there is at least 1 restaurant that is not closed,
-            # the caf is not closed
-            if not r.is_closed():
-                self.is_closed = False
+        self.is_closed = self.is_closed()
+
 
     def _go_download_restaurants(self):
         page_bytes = request.urlopen(self.CAFE_BASE_URL + self.endpoint)
@@ -41,6 +38,14 @@ class Cafe(object):
 
             rest = Restaurant(rest_name, caf_rest_endpoint)
             self.restaurants.append(rest)
+
+    def is_closed(self):
+        for r in self.restaurants:
+            # if there is at least 1 restaurant that is not closed,
+            # the caf is not closed
+            if not r.is_closed():
+                return False
+        return True
 
     def __str__(self):
         output = ""
