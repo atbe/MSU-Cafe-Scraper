@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from urllib import request
 from itertools import zip_longest
+from string import punctuation
 
 class Restaurant(object):
     CAFE_BASE_URL = 'https://eatatstate.com'
@@ -39,7 +40,7 @@ class Restaurant(object):
 
             # loop over all the menu options and add them to their respective list
             for single_food_option_div in menu_time_segment_div.find_all('div', attrs={'class': 'field-item'}):
-                single_food_name_str = single_food_option_div.text.strip()
+                single_food_name_str = single_food_option_div.text.strip(punctuation)
 
                 # skip these garbage entries
                 # hours is mixed in the same section of the list of their websites
