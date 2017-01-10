@@ -15,10 +15,10 @@ type Cafeteria struct {
 		Breakfast []string `json:"breakfast"`
 		Dinner    []string `json:"dinner"`
 		Endpoint  string   `json:"endpoint"`
+		IsClosed  bool     `json:"is_closed"`
 		LateNight []string `json:"late_night"`
 		Lunch     []string `json:"lunch"`
 		Name      string   `json:"name"`
-        IsClosed    bool   `json:"is_closed"`
 	} `json:"restaurants"`
 	UniqueName string `json:"unique_name"`
 }
@@ -61,6 +61,8 @@ type MenuHeaders struct {
 
 func serveCafeteriaJson(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+	fmt.Println("DEBUG: (serveCafeteriaJson) - Request recieved from host: " + r.RemoteAddr)
+
 	if r.Method == "POST" {
 		// check if name was in the body and respond with 402 if not
 		if r.Body == nil {
@@ -78,13 +80,16 @@ func serveCafeteriaJson(w http.ResponseWriter, r *http.Request) {
 		// TODO: Handle invalid cafeteria name
 		cafeteria := currentCafeMap[requestHeaders.CafeteriaName]
 		json.NewEncoder(w).Encode(cafeteria)
+		fmt.Println("DEBUG: (serveCafeteriaJson) - Response written for host: " + r.RemoteAddr)
 	}
 }
 
 func serveAllCafeteriaJson(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+	fmt.Println("DEBUG: (serveAllCafeteriaJson) - Request recieved from host: " + r.RemoteAddr)
 	if r.Method == "GET" {
 		json.NewEncoder(w).Encode(currentCafeArray)
+		fmt.Println("DEBUG: (serveAllCafeteriaJson) - Response written for host: " + r.RemoteAddr)
 	}
 }
 
