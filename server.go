@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 type Cafeteria struct {
@@ -61,7 +62,7 @@ type MenuHeaders struct {
 
 func serveCafeteriaJson(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	fmt.Println("DEBUG: (serveCafeteriaJson) - Request recieved from host: " + r.RemoteAddr)
+	fmt.Println("DEBUG: (serveCafeteriaJson)", time.Now(), " - Request recieved from host: ", r.RemoteAddr)
 
 	if r.Method == "POST" {
 		// check if name was in the body and respond with 402 if not
@@ -86,7 +87,7 @@ func serveCafeteriaJson(w http.ResponseWriter, r *http.Request) {
 
 func serveAllCafeteriaJson(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	fmt.Println("DEBUG: (serveAllCafeteriaJson) - Request recieved from host: " + r.RemoteAddr)
+	fmt.Println("DEBUG: (serveAllCafeteriaJson)", time.Now(), " - Request recieved from host: ", r.RemoteAddr)
 	if r.Method == "GET" {
 		json.NewEncoder(w).Encode(currentCafeArray)
 		fmt.Println("DEBUG: (serveAllCafeteriaJson) - Response written for host: " + r.RemoteAddr)
