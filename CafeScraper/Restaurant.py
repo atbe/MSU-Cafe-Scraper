@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 from urllib import request
 from itertools import zip_longest
-from string import punctuation
 
 class Restaurant(object):
     CAFE_BASE_URL = 'https://eatatstate.com'
@@ -29,6 +28,7 @@ class Restaurant(object):
         time_segment_to_collection_dict = {'field-field-lunch-menu': self.lunch, 'field-field-dinner-menu': self.dinner,
         'field-field-late-night': self.late_night, 'field-field-breakfast-menu': self.breakfast}
 
+        filter_words = ['\n', 'hours', 'am', 'pm', 'a.m', 'p.m', 'closed']
         # this will collect all the food items for a given time segment and add them to the respective collection
         for time_segment_name_str in time_segment_to_collection_dict:
             menu_time_segment_div = soup.find('div', attrs={'class': time_segment_name_str})
@@ -40,12 +40,11 @@ class Restaurant(object):
 
             # loop over all the menu options and add them to their respective list
             for single_food_option_div in menu_time_segment_div.find_all('div', attrs={'class': 'field-item'}):
-                single_food_name_str = single_food_option_div.text.strip(punctuation)
+                single_food_name_str = single_food_option_div.text.strip().strip('-')
 
                 # skip these garbage entries
                 # hours is mixed in the same section of the list of their websites
-                if single_food_name_str.lower() == 'closed' or '\n' in single_food_name_str or \
-				                'hours' in single_food_name_str.lower():
+                if any(bad_word in single_food_name_str.lower() for bad_word in filter_words):
                     continue
 
                 #print(self.cafe.name, self.name, '----->', "'{}'".format(name))
