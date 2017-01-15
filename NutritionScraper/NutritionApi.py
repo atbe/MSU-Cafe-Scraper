@@ -1,4 +1,8 @@
 import requests
+from NutritionScraper.NutritionApiHtmlParser import get_allergens_from_label
+from NutritionScraper.NutritionApiHtmlParser import get_serving_size_from_label
+from NutritionScraper.NutritionApiHtmlParser import get_ingredients_from_label
+from NutritionScraper.NutritionApiHtmlParser import get_nutrition_metrics_from_label
 from NutritionScraper.NutritionApiHtmlParser import get_cafeteria_restaurant_numbers
 from NutritionScraper.NutritionApiHtmlParser import get_restaurant_food_numbers
 from bs4 import BeautifulSoup
@@ -24,6 +28,11 @@ class FoodItem(object):
             'protein': None
         }
 
+        self.serving_size = None
+        self.ingredients = []
+        self.allergens = []
+
+        # scrape the label
         self.go_build_food_facts()
 
     def go_build_food_facts(self):
@@ -33,43 +42,10 @@ class FoodItem(object):
         soup = BeautifulSoup(self.nutrition_html, 'html.parser')
         print(self.name)
 
-        # calories from fat is weird
-        calories_from_fat_html_element = soup.find('span', attrs={'class':'cbo_nn_SecondaryNutrient'})
-        if calories_from_fat_html_element == None:
-            calories_from_fat_html_element = soup.find('span', attrs={'class':'cbo_nn_LabelPrimaryDetailIncomplete'})
-
-        # still be careful
-        if calories_from_fat_html_element != None:
-            self.metric_to_value_nutrition_facts['calories_from_fat'] = \
-                int(calories_from_fat_html_element.get_text())
-        else:
-            print('ERROR: Error finding nutrition label name. More info:\n', calories_from_fat_html_element)
-
-        # handle all other metrics
-        for label_detail_td in soup.find_all('td', attrs={'class':'cbo_nn_LabelBorderedSubHeader'}):
-            label_key = '_'.join(label_detail_td.find('td', attrs={'class':'cbo_nn_LabelDetail'})\
-                .find('font').get_text().strip(':').lower().split())
-
-            # print(label_detail_td)
-
-            label_font_element = label_detail_td.find(attrs={'class':'cbo_nn_SecondaryNutrient'})
-            if label_font_element == None:
-                # TODO: investigate detail incomplete
-                label_font_element = label_detail_td.find(attrs={'class':'cbo_nn_LabelPrimaryDetailIncomplete'})
-
-            if label_font_element != None:
-                label_value = ' '.join(label_font_element.get_text().strip().split())
-            else:
-                print('ERROR: Error finding nutrition label value. More info:\n', label_detail_td)
-            # print(label_value)
-
-            self.metric_to_value_nutrition_facts[label_key] = label_value
-
-        # serving size
-        #
-        serving_size_text_bar = soup.find('td', attrs={'class':'cbo_nn_LabelBottomBorderLabel'}).get_text()
-        # sample split: "['Serving', 'Size:', '4oz', '(144g)']"
-        self.serving_size = serving_size_text_bar.split()[2]
+        self.metric_to_value_nutrition_facts = get_nutrition_metrics_from_label(soup)
+        self.serving_size = get_serving_size_from_label(soup)
+        self.ingredients = get_ingredients_from_label(soup)
+        self.allergens = get_allergens_from_label(soup)
 
 class Cafeteria(object):
 
