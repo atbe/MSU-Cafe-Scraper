@@ -1,4 +1,5 @@
 import requests
+from string import punctuation
 from NutritionScraper.NutritionApiHtmlParser import get_allergens_from_label
 from NutritionScraper.NutritionApiHtmlParser import get_serving_size_from_label
 from NutritionScraper.NutritionApiHtmlParser import get_ingredients_from_label
@@ -13,6 +14,7 @@ class FoodItem(object):
         self.name = name
         self.number = number
         self.nutrition_html = nutrition_facts_html
+        self.unique_name = self.get_food_unique_name()
 
         # build label_detail elements
         self.metric_to_value_nutrition_facts = {
@@ -46,6 +48,14 @@ class FoodItem(object):
         self.serving_size = get_serving_size_from_label(soup)
         self.ingredients = get_ingredients_from_label(soup)
         self.allergens = get_allergens_from_label(soup)
+
+    def get_food_unique_name(self):
+        name_no_punctuation = ''.join([ch for ch in self.name if ch not in punctuation])
+        name_lowered_split = name_no_punctuation.lower().split()
+        name_unique = '_'.join(name_lowered_split)
+
+        # print(name_unique)
+        return name_unique
 
 class Cafeteria(object):
 
@@ -138,16 +148,16 @@ class NutritionApi(object):
     '''
 
     cafe_number_to_name = {
-        # 1: 'Heritage Commons',
-        # 2: 'Brody Square',
-        # 3: 'South Pointe',
+        1: ('Heritage Commons', 'landon'),
+        2: ('Brody Square', 'brody'),
+        3: ('South Pointe', 'case'),
         4: ('Holden Dining', 'holden'),
-        5: ('Wilson Dining', 'wilson')
-        # 6: 'The Gallery',
+        5: ('Wilson Dining', 'wilson'),
+        6: ('The Gallery', 'gallery'),
         # 7: 'Riverwalk Market',
-        # 8: 'The Vista',
-        # 9: 'Holmes Dining',
-        # 10: 'The Edge',
+        8: ('The Vista', 'shaw'),
+        9: ('Holmes Dining', 'holmes'),
+        10: ('The Edge', 'akers')
         # 11: "Sparty's",
         # 12: 'Daily Deli',
         # 13: 'Daily Salad Bar',
