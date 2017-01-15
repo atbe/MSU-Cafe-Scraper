@@ -58,12 +58,12 @@ class FoodItem(object):
                 label_font_element = label_detail_td.find(attrs={'class':'cbo_nn_LabelPrimaryDetailIncomplete'})
 
             if label_font_element != None:
-                label_value = label_font_element.get_text().strip().replace(' ', '')
+                label_value = ' '.join(label_font_element.get_text().strip().split())
             else:
                 print('ERROR: Error finding nutrition label value. More info:\n', label_detail_td)
             # print(label_value)
 
-            self.metric_to_value_nutrition_facts[label_key] = label_font_element
+            self.metric_to_value_nutrition_facts[label_key] = label_value
 
         # serving size
         #
@@ -116,24 +116,24 @@ class Cafeteria(object):
             food_number_and_name_tups = get_restaurant_food_numbers(page_html_to_scrape)
 
             if rest_number not in api.restaurants:
-                restaurant = Restaurant(rest_number, food_number_and_name_tups)
-                restaurant.go_build_fooditems(api)
-                api.restaurants[rest_number] = restaurant
+                restaurant = Restaurant(rest_number)
+                restaurant.go_build_fooditems(api, food_number_and_name_tups)
+                api.restaurants.append(restaurant)
 
             # input('Press enter to process the next Restaurant')
 
 
 class Restaurant(object):
 
-    def __init__(self, number, food_number_and_name_tups):
+    def __init__(self, number):
         self.number = number
-        self.food_number_and_name_tups = food_number_and_name_tups
+        self.food_numbers = []
 
-    def go_build_fooditems(self, api):
+    def go_build_fooditems(self, api, food_number_and_name_tups):
         FOOD_ITEM_NUTRITION_FACTS_ENDPOINT_POST = "/NutritionDetail/ShowItemNutritionLabel"
         print('Building food items in restaurant #', self.number)
 
-        for food_number, food_name in self.food_number_and_name_tups:
+        for food_number, food_name in food_number_and_name_tups:
 
             rest_menu_page_response = requests.post(
                 url=NutritionApi.NUTRITION_API_BASE_URL + FOOD_ITEM_NUTRITION_FACTS_ENDPOINT_POST,
@@ -144,7 +144,9 @@ class Restaurant(object):
 
             # use this as a way of reducing the number of calls to the api
             if food_number not in api.food_items:
-                api.food_items[food_number] = FoodItem(food_name, food_number, label_html)
+                api.food_items.append(FoodItem(food_name, food_number, label_html))
+
+            self.food_numbers.append(food_number)
 
             # input("Press enter to view the next food item")
 
@@ -192,10 +194,8 @@ class NutritionApi(object):
 
     def __init__(self):
         self.cafeterias = []
-        self.food_items = {}
-        self.restaurants = {}
-
-        self.get_cafeteria_restaurant_nutrition()
+        self.food_items = []
+        self.restaurants = []
 
     def get_cafeteria_restaurant_nutrition(self):
         CAFETERIA_OPEN_RESTAURANTS_ENDPOINT_POST = '/Unit/SelectUnitFromChildUnitsList'
@@ -214,7 +214,6 @@ class NutritionApi(object):
                             if d['id'] == 'menuPanel'].pop()['html']
 
             restaurant_numbers = get_cafeteria_restaurant_numbers(page_html_to_scrape, only_today=True)
-
 
             cafe = Cafeteria(cafe_number, NutritionApi.cafe_number_to_name[cafe_number][1], restaurant_numbers)
             cafe._go_build_restaurant(self)
