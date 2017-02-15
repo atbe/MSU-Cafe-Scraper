@@ -101,7 +101,7 @@ func loadFoodItemJson() (map[string]FoodItem, []FoodItem){
 	foodMap := make(map[string]FoodItem)
 	for i := range data {
 		food := data[i]
-		//fmt.Println(rest.CoverName)
+		fmt.Println(food.UniqueName)
 		foodMap[food.UniqueName] = food
 	}
 
@@ -156,9 +156,42 @@ func serveAllCafeteriaJson(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func serverAllFoodItemJson(w http.ResponseWriter, r *http.Request) {
+type FoodItemHeaders struct {
+	FootItemName string `json:"food_item_name"`
+}
+
+func serveFoodItemJson(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	fmt.Println("DEBUG: (serveAllCafeteriaJson)", time.Now(), " - Request recieved from host: ", r.RemoteAddr)
+	fmt.Println("DEBUG: (serveFoodItemJson)", time.Now(), " - Request recieved from host: ", r.RemoteAddr)
+
+	if r.Method == "POST" {
+		// check if name was in the body and respond with 402 if not
+		if r.Body == nil {
+			//http.error(w, "empty request body.", 402)
+			return
+		}
+
+		// extract the cafeteria name from the request
+		var requestHeaders FoodItemHeaders
+		//fmt.Println("Body: ", "'", r.Body, "'")
+		if err := json.NewDecoder(r.Body).Decode(&requestHeaders); err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		// TODO: Handle invalid cafeteria name
+		foodItem := currentFoodItemMap[requestHeaders.FootItemName]
+		fmt.Println("DEBUG: (serveFoodItemJson) - food item = ", "'" + requestHeaders.FootItemName + "'")
+		fmt.Println("DEBUG: (serveFoodItemJson) - found food item = ", "'" + foodItem.UniqueName+ "'")
+		json.NewEncoder(w).Encode(foodItem)
+		fmt.Println("DEBUG: (serveFoodItemJson) - Response written for host: " + r.RemoteAddr)
+	}
+}
+
+
+func serveAllFoodItemJson(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	fmt.Println("DEBUG: (serveAllFoodItemJson)", time.Now(), " - Request recieved from host: ", r.RemoteAddr)
 	if r.Method == "GET" {
 		json.NewEncoder(w).Encode(currentFoodItemArray)
 		fmt.Println("DEBUG: (serveAllCafeteriaJson) - Response written for host: " + r.RemoteAddr)
@@ -178,6 +211,7 @@ func main() {
 	// setup http server and serve the cafes
 	http.HandleFunc("/menu/cafeteria", serveCafeteriaJson)
 	http.HandleFunc("/menu/all_cafeterias", serveAllCafeteriaJson)
-	http.HandleFunc("/nutrition/all_foods", serverAllFoodItemJson)
+	http.HandleFunc("/nutrition/all_foods", serveAllFoodItemJson)
+	http.HandleFunc("/nutrition/food", serveFoodItemJson)
 	http.ListenAndServe(":8000", nil)
 }
