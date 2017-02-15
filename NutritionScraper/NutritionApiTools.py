@@ -10,6 +10,7 @@ def get_cafeteria_restaurant_numbers(html_page, only_today=False):
     # sample from html: 'Friday, January 13, 2017'
     if only_today:
         today_str_match = date.today().strftime("%A, %B %d, %Y")
+        today_str_match = "Monday, January 16, 2017"
 
         for td in soup.find_all('td', attrs={'class':'cbo_nn_menuCell'}):
             if today_str_match in str(td):
@@ -81,21 +82,24 @@ def get_nutrition_metrics_from_label(soup):
     metric_to_value_nutrition_facts = {}
 
     # calories from fat is weird
-    calories_from_fat_html_element = soup.find('span', attrs={'class': 'cbo_nn_SecondaryNutrient'})
+    calories_from_fat_html_element = soup.find('td', attrs={'class': 'cbo_nn_SecondaryNutrient'})
     if calories_from_fat_html_element == None:
         calories_from_fat_html_element = soup.find('span', attrs={'class': 'cbo_nn_LabelPrimaryDetailIncomplete'})
 
     # still be careful
     if calories_from_fat_html_element != None:
         metric_to_value_nutrition_facts['calories_from_fat'] = \
-            int(calories_from_fat_html_element.get_text())
+            str(calories_from_fat_html_element.get_text())
     else:
         print('ERROR: Error finding nutrition label name. More info:\n', calories_from_fat_html_element)
 
     # handle all other metrics
     for label_detail_td in soup.find_all('td', attrs={'class': 'cbo_nn_LabelBorderedSubHeader'}):
-        label_key = '_'.join(label_detail_td.find('td', attrs={'class': 'cbo_nn_LabelDetail'}) \
-                             .find('font').get_text().strip(':').lower().split())
+
+        label_key = label_detail_td.find('td', attrs={'class': 'cbo_nn_LabelDetail'})
+        if label_key == None:
+            continue
+        label_key = '_'.join(label_key.find('font').get_text().strip(':').lower().split())
 
         # print(label_detail_td)
 
@@ -166,3 +170,10 @@ def get_allergens_from_label(soup):
     #     print("'", a, "'")
 
     return allergens_list
+
+def build_keywords_from_name(name):
+    keywords = []
+    for word in name.split():
+        keywords.append(
+            str(''.join([ch for ch in word if ch.isalnum()])).lower())
+    return keywords
