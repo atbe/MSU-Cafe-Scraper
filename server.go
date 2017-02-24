@@ -57,7 +57,7 @@ type CafeAPIResponse struct {
 func loadMenuJson() (map[string]Cafeteria, []Cafeteria) {
 	b, err := ioutil.ReadFile("menus.json")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 
 	var data []Cafeteria
